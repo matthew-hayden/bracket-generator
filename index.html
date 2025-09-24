@@ -15,6 +15,29 @@
   <!-- Main content container -->
    <div id="app" class="max-w-4xl mx-auto mt-10 p-4 bg-white rounded shadow">
     <!-- Bracket content will go here -->
+     <div class="space-y-6">
+      <!-- Input form -->
+       <form action="" id="entry-form" class="flex gap-2">
+        <input type="text" id="entry-input" placeholder="Enter a competitor..." class="flex-1 border rounded p-2">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add</button>
+       </form>
+       <!-- List of entries -->
+        <div>
+          <h2 class="text-2xl font-semibold mb-2">Entries</h2>
+          <ul id="entries-list" class="list-disc list-inside space-y-1">
+
+          </ul>
+        </div>
+        <!-- Bracket placeholder -->
+         <div>
+          <h2 class="text-2xl font-semibold mb-2">Bracket</h2>
+          <div id="bracket" class="p-4 border rounded bg-gray-50">
+            <!-- Bracket will render here -->
+             <p class="text-gray-500 italic">No bracket yet - add some entries!</p>
+
+          </div>
+         </div>
+     </div>
   </div>
 
   <!-- Link to JS -->
