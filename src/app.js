@@ -3,6 +3,10 @@ const form = document.getElementById("entry-form");
 const input = document.getElementById("entry-input");
 const list = document.getElementById("entries-list");
 const bracketDiv = document.getElementById("bracket");
+const startBtn = document.getElementById("start-btn");
+
+// Global counter for unique IDs
+let entryId = 0;
 
 // Store entries in an array
 let entries = [];
@@ -10,11 +14,7 @@ let entries = [];
 // Track current round and round number
 let currentRound = [];
 let round = 1;
-
-// Helper to show placeholder
-function showPlaceholder() {
-  bracketDiv.innerHTML = `<p class="text-gray-500 italic">No bracket yet - add some entries!</p>`;
-}
+let tournamentStarted = false;
 
 // Helper to show champion
 function showChampion(name) {
@@ -29,7 +29,22 @@ function showChampion(name) {
 function renderBracket() {
   bracketDiv.innerHTML = "";
 
-  if (entries.length === 0) return showPlaceholder();
+  if (!tournamentStarted) {
+    bracketDiv.innerHTML = `<p class="text-gray-500 italic">Add entries and click Start Tournament to begin.</p>`;
+    return;
+  }
+
+  if (entries.length === 0) {
+    bracketDiv.innerHTML = `<p class="text-gray-500 italic">No entries found!</p>`
+  }
+
+  if (currentRound.length === 1 && round > 1) {
+    bracketDiv.innerHTML = `<h2 class="text-2xl font-bold text-center text-green-600">Champion: ${currentRound[0]}</h2>`
+  }
+
+  if (round === 1 && currentRound.length === 0) {
+    currentRound = [...entries].sort(() => Math.random() - 0.5);
+  }
 
   // Initialize first round
   if (currentRound.length === 0) {
@@ -37,7 +52,7 @@ function renderBracket() {
   }
 
   // If only 1 left, show champion
-  if (currentRound.length === 1) return showChampion(currentRound[0]);
+  if (currentRound.length === 1) return showChampion(currentRound[0].text);
 
   // Container for this round
   const roundDiv = document.createElement("div");
@@ -71,13 +86,13 @@ function renderBracket() {
     if (i + 1 < currentRound.length) {
       // Competitor A
       const btnA = document.createElement("button");
-      btnA.textContent = currentRound[i];
+      btnA.textContent = currentRound[i].text;
       btnA.className =
         "px-4 py-2 border rounded hover:bg-blue-100 transition cursor-pointer";
 
       // Competitor B
       const btnB = document.createElement("button");
-      btnB.textContent = currentRound[i + 1];
+      btnB.textContent = currentRound[i + 1].text;
       btnB.className =
         "px-4 py-2 border rounded hover:bg-blue-100 transition cursor-pointer";
 
@@ -106,7 +121,7 @@ function renderBracket() {
     } else {
       // Bye round
       const bye = document.createElement("p");
-      bye.textContent = `${currentRound[i]} gets a bye`;
+      bye.textContent = `${currentRound[i].text} gets a bye`;
       winners.push(currentRound[i]);
       matchupDiv.appendChild(bye);
     }
@@ -121,20 +136,54 @@ function renderBracket() {
 // Add new entry
 form.addEventListener("submit", function (e) {
   e.preventDefault();
-  const entry = input.value.trim();
-  if (!entry) return;
+  if (tournamentStarted) return;
 
-  entries.push(entry);
+  const entryText = input.value.trim();
+  if (!entryText) return;
 
+  const newEntry = { id: entryId++, text: entryText };
+  entries.push(newEntry);
+
+  // Create container <li>
   const li = document.createElement("li");
-  li.textContent = entry;
+  li.className = "flex justify-between items-center p-2 bg-gray-100 rounded";
+
+  // Entry name
+  const span = document.createElement("span");
+  span.textContent = newEntry.text;
+
+  // Remove button
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "❌";
+  removeBtn.className = "ml-4 text-red-500 hover:text-red-700";
+
+  // Remove logic
+  removeBtn.addEventListener("click", () => {
+    // Block mid-tournament removal
+    if (tournamentStarted) return;
+    // Remove from array using ID
+    entries = entries.filter(e => e.id !== newEntry.id);
+    // Remove from DOM
+    li.remove();
+  });
+  
+  li.appendChild(span);
+  li.appendChild(removeBtn);
   list.appendChild(li);
 
   input.value = "";
+});
 
-  // Reset bracket state for new entries
-  currentRound = [];
-  round = 1;
-
+// Start button logic
+startBtn.addEventListener("click", () => {
+  if (entries.length < 2) {
+    alert("Add at least 2 entries to start the tournament!");
+    return;
+  }
+  tournamentStarted = true;
+  // Disable entry form
+  form.querySelector("button[type=submit]").disabled = true;
+  // Disable start button
+  startBtn.disabled = true;
   renderBracket();
 });
